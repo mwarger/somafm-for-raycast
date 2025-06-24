@@ -92,6 +92,36 @@ export default function Command() {
     });
   };
 
+  // Group stations by genre if enabled
+  const getGenreGroups = (stationList: Station[]) => {
+    if (viewOptions.groupBy !== "genre") {
+      return null;
+    }
+
+    const groups = new Map<string, Station[]>();
+    stationList.forEach((station) => {
+      const genreString = station.genre || "Other";
+      // Split genres by pipe character and trim whitespace
+      const genres = genreString.split("|").map((g) => g.trim());
+
+      // Add station to each genre group
+      genres.forEach((genre) => {
+        if (!groups.has(genre)) {
+          groups.set(genre, []);
+        }
+        groups.get(genre)!.push(station);
+      });
+    });
+
+    // Sort genres alphabetically and sort stations within each genre
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([genre, stations]) => ({
+        genre,
+        stations: sortStations(stations),
+      }));
+  };
+
   // Create a flat list of all visible stations to assign number shortcuts
   let allVisibleStations: Station[] = [];
 
@@ -216,36 +246,6 @@ export default function Command() {
       actions={stationActions(station, index)}
     />
   );
-
-  // Group stations by genre if enabled
-  const getGenreGroups = (stationList: Station[]) => {
-    if (viewOptions.groupBy !== "genre") {
-      return null;
-    }
-
-    const groups = new Map<string, Station[]>();
-    stationList.forEach((station) => {
-      const genreString = station.genre || "Other";
-      // Split genres by pipe character and trim whitespace
-      const genres = genreString.split("|").map((g) => g.trim());
-
-      // Add station to each genre group
-      genres.forEach((genre) => {
-        if (!groups.has(genre)) {
-          groups.set(genre, []);
-        }
-        groups.get(genre)!.push(station);
-      });
-    });
-
-    // Sort genres alphabetically and sort stations within each genre
-    return Array.from(groups.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([genre, stations]) => ({
-        genre,
-        stations: sortStations(stations),
-      }));
-  };
 
   if (viewMode === "grid") {
     return (
