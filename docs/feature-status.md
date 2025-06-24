@@ -32,11 +32,9 @@
 - [ ] Playback history beyond recently played
 
 ### Bonus Features (Not in original plan)
-- [x] Quick Play Shortcuts via Raycast Quicklinks
 - [x] Menu Bar extension for instant access
 - [x] PLS playlist file parsing
 - [x] Smart favorites display (always visible, even during search)
-- [x] Copy quick play deeplink for power users
 - [x] Last updated timestamp in refresh action
 
 ## 🚧 Remaining Features
@@ -72,7 +70,7 @@
 
 ## 📝 Notes
 
-- The extension has exceeded initial expectations with quick play shortcuts and menu bar integration
+- The extension has exceeded initial expectations with menu bar integration
 - User feedback has been incorporated (genre splitting, sort options, favorites visibility)
 - Performance is excellent with 40+ stations
 - Auto-refresh for now playing works smoothly without disrupting UX

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a fully-featured Raycast extension for browsing and playing SomaFM internet radio stations. The extension provides multiple ways to access and play stations, including a browse interface, quick play shortcuts, and menu bar access.
+This is a fully-featured Raycast extension for browsing and playing SomaFM internet radio stations. The extension provides multiple ways to access and play stations, including a browse interface and menu bar access.
 
 ## Development Commands
 
@@ -19,14 +19,12 @@ npm run publish    # Publish to Raycast Store
 ## Architecture
 
 ### Extension Structure
-- **Commands**: Three commands defined in `package.json`:
+- **Commands**: Two commands defined in `package.json`:
   1. `index` - Main browse interface (Grid/List view)
-  2. `play-station` - Deeplink handler for quick play shortcuts
-  3. `menu-bar` - Menu bar extension for quick access to favorites
+  2. `menu-bar` - Menu bar extension for quick access to favorites
 
 ### Main Components
 - **src/index.tsx** - Main browsing interface with Grid/List views
-- **src/play-station.tsx** - Handles deeplinks for quick play shortcuts
 - **src/menu-bar.tsx** - Menu bar interface for favorite stations
 - **src/types/** - TypeScript interfaces (Station, Playlist)
 - **src/utils/** - Core utilities:
@@ -43,7 +41,6 @@ npm run publish    # Publish to Raycast Store
 2. **PLS File Parsing** - Extracts direct stream URLs from playlist files
 3. **Multiple Access Methods**:
    - Browse interface with search and filtering
-   - Quick play shortcuts via Raycast Quicklinks
    - Menu bar for instant access to favorites
 4. **Persistent Storage** - Favorites, recently played, and view preferences
 5. **Genre Splitting** - Handles pipe-separated genres (e.g., "jazz|lounge")

@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast, open } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
@@ -7,7 +7,6 @@ import { useFavorites } from "./hooks/useFavorites";
 import { getRecentlyPlayed, RecentItem, clearRecentlyPlayed } from "./utils/storage";
 import { useViewMode } from "./hooks/useViewMode";
 import { useViewOptions } from "./hooks/useViewOptions";
-import { createDeeplink } from "@raycast/utils";
 
 export default function Command() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -200,50 +199,6 @@ export default function Command() {
           onAction={() => toggleFavoriteStation(station.id, station.title)}
           shortcut={{ modifiers: ["cmd"], key: "f" }}
         />
-        {isFavorite(station.id) && (
-          <>
-            <Action
-              title="Create Quick Play Shortcut"
-              icon={Icon.Link}
-              onAction={async () => {
-                const deeplink = createDeeplink({
-                  command: "play-station",
-                  context: {
-                    stationId: station.id,
-                    stationName: station.title,
-                  },
-                });
-
-                // Open Raycast's Create Quicklink command with the deeplink
-                // User can customize the name (we provide a good default)
-                await open(
-                  `raycast://extensions/raycast/raycast/create-quicklink?name=${encodeURIComponent(
-                    `Play ${station.title}`,
-                  )}&link=${encodeURIComponent(deeplink)}`,
-                );
-
-                await showToast({
-                  style: Toast.Style.Success,
-                  title: "Creating Quick Play Shortcut",
-                  message: "Customize the name and assign a hotkey if desired",
-                });
-              }}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
-            />
-            <Action.CopyToClipboard
-              title="Copy Quick Play Link"
-              content={createDeeplink({
-                command: "play-station",
-                context: {
-                  stationId: station.id,
-                  stationName: station.title,
-                },
-              })}
-              icon={Icon.CopyClipboard}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
-            />
-          </>
-        )}
         <Action
           title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
           icon={viewMode === "grid" ? Icon.List : Icon.Grid}

@@ -1,0 +1,44 @@
+name: Publish Extension
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish to Raycast Store
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate extension
+        run: npx @raycast/api@latest validate
+
+      # Manual step - actual publishing requires manual PR creation
+      # The npm run publish command opens a browser and requires authentication
+      - name: Publish reminder
+        run: |
+          echo "Extension validated successfully!"
+          echo "To publish to Raycast Store:"
+          echo "1. Run 'npm run publish' locally"
+          echo "2. Follow the browser prompts to create a PR"
+          echo "3. Wait for Raycast team review"

@@ -1,0 +1,59 @@
+name: Validate Extension
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate Raycast Extension
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate extension metadata
+        run: |
+          # Check for required files
+          if [ ! -f "extension-icon.png" ] && [ ! -f "icon.png" ]; then
+            echo "❌ Missing extension icon"
+            exit 1
+          fi
+          
+          if [ ! -f "README.md" ]; then
+            echo "❌ Missing README.md"
+            exit 1
+          fi
+          
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "❌ Missing CHANGELOG.md"
+            exit 1
+          fi
+          
+          if [ ! -d "metadata" ] || [ -z "$(ls -A metadata/*.png 2>/dev/null)" ]; then
+            echo "⚠️  Warning: No screenshots found in metadata folder"
+            echo "Add screenshots before publishing to Raycast Store"
+          fi
+          
+          echo "✅ Extension structure validated"
+
+      - name: Validate with Raycast API
+        run: npx @raycast/api@latest validate

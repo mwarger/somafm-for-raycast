@@ -11,10 +11,6 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
 ### 🎯 Current Features (v1.0)
 
 ### 🚀 Quick Access
-- **Quick Play Shortcuts**: Create Raycast Quicklinks for instant access to favorite stations
-  - Type "Play Groove Salad" directly in Raycast
-  - Assign custom names and global hotkeys
-  - Press `⌘+Shift+S` on any favorite station to create a shortcut
 - **Menu Bar Access**: Always-visible menu bar icon shows your favorite stations
   - Click the 🎵 icon in your menu bar
   - Play any favorite station with one click
@@ -64,8 +60,6 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
 - `Enter` - Play selected station
 - `1-9` - Quick play stations 1-9
 - `⌘+F` - Toggle favorite
-- `⌘+Shift+S` - Create quick play shortcut (favorites only)
-- `⌘+Shift+C` - Copy quick play link (favorites only)
 - `⌘+Shift+V` - Switch between grid/list view
 - `⌘+1` - Sort by name
 - `⌘+2` - Sort by listeners
@@ -96,13 +90,6 @@ Without these, streams will open in Music.app or your default browser.
 3. Browse stations in the grid or search for specific genres/stations
 4. Press `Enter` or use number keys `1-9` to play
 5. Use `⌘+F` to favorite stations you love
-
-### Quick Play Shortcuts
-1. Favorite a station with `⌘+F`
-2. Press `⌘+Shift+S` to create a quick play shortcut
-3. Name it whatever you want (e.g., "Play Groove Salad", "Chill", "Work Music")
-4. Now type that name directly in Raycast to play instantly
-5. Optionally assign a global hotkey for even faster access
 
 ### Menu Bar
 1. Look for the 🎵 icon in your menu bar
