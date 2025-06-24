@@ -220,10 +220,10 @@ export default function Command() {
           source: station.xlimage || station.largeimage || station.image,
           fallback: Icon.Music,
         },
-        tooltip: station.description,
+        tooltip: `${station.description}\n\n${station.listeners} listeners`,
       }}
       title={station.title}
-      subtitle={station.genre}
+      subtitle={`${station.genre} • ${station.listeners} listeners`}
       keywords={[station.genre, station.dj]}
       actions={stationActions(station, index)}
     />
