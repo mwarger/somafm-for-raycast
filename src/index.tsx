@@ -181,7 +181,7 @@ export default function Command() {
         <ActionPanel.Section>
           <Action
             title={`Sort by ${viewOptions.sortOrder === "listeners" ? "Name" : "Listeners"}`}
-            icon={Icon.ArrowUp}
+            icon={viewOptions.sortOrder === "listeners" ? Icon.ArrowDown : Icon.ArrowUp}
             onAction={toggleSortOrder}
             shortcut={{ modifiers: ["cmd"], key: "s" }}
           />
