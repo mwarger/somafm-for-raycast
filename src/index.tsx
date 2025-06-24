@@ -14,20 +14,40 @@ export default function Command() {
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { isFavorite, toggleFavoriteStation } = useFavorites();
   const { viewMode, toggleViewMode } = useViewMode();
   const { viewOptions, setSortBy, toggleGroupBy } = useViewOptions();
 
   useEffect(() => {
     loadData();
+
+    // Auto-refresh every 30 seconds to update now playing info
+    const interval = setInterval(() => {
+      loadData(true); // Silent refresh - no loading indicator
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  async function loadData() {
-    setIsLoading(true);
-    const [fetchedStations, recent] = await Promise.all([fetchStations(), getRecentlyPlayed()]);
-    setStations(fetchedStations);
-    setRecentlyPlayed(recent);
-    setIsLoading(false);
+  async function loadData(silent = false) {
+    if (!silent) setIsLoading(true);
+    try {
+      const [fetchedStations, recent] = await Promise.all([fetchStations(), getRecentlyPlayed()]);
+      setStations(fetchedStations);
+      setRecentlyPlayed(recent);
+      setLastUpdated(new Date());
+    } catch {
+      if (!silent) {
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "Failed to load stations",
+          message: "Check your internet connection",
+        });
+      }
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
   }
 
   async function handleClearRecentlyPlayed() {
@@ -62,7 +82,7 @@ export default function Command() {
   // Separate stations into categories
   // Favorites should show ALL favorites, not just filtered ones
   const favoriteStations = stations.filter((station) => isFavorite(station.id));
-  
+
   // For recently played and other stations, use filtered results
   const recentStations = filteredStations.filter((station) => {
     const isRecent = recentlyPlayed.some((item) => item.stationId === station.id);
@@ -201,7 +221,7 @@ export default function Command() {
                     `Play ${station.title}`,
                   )}&link=${encodeURIComponent(deeplink)}`,
                 );
-                
+
                 await showToast({
                   style: Toast.Style.Success,
                   title: "Creating Quick Play Shortcut",
@@ -268,8 +288,13 @@ export default function Command() {
           />
           <Action
             title="Refresh Stations"
+            subtitle={
+              lastUpdated
+                ? `Updated ${new Date().getTime() - lastUpdated.getTime() < 60000 ? "just now" : `${Math.floor((new Date().getTime() - lastUpdated.getTime()) / 60000)}m ago`}`
+                : undefined
+            }
             icon={Icon.ArrowClockwise}
-            onAction={loadData}
+            onAction={() => loadData()}
             shortcut={{ modifiers: ["cmd"], key: "r" }}
           />
         </ActionPanel.Section>
@@ -287,40 +312,50 @@ export default function Command() {
     );
   };
 
-  const renderGridItem = (station: Station, index?: number) => (
-    <Grid.Item
-      key={station.id}
-      content={{
-        value: {
-          source: station.xlimage || station.largeimage || station.image,
-          fallback: Icon.Music,
-        },
-        tooltip: `${station.description}\n\n${station.listeners} listeners`,
-      }}
-      title={station.title}
-      subtitle={`${station.genre} • ${station.listeners} listeners`}
-      keywords={[station.genre, station.dj]}
-      actions={stationActions(station, index)}
-    />
-  );
+  const renderGridItem = (station: Station, index?: number) => {
+    const nowPlaying = station.lastPlaying ? `🎵 ${station.lastPlaying}` : "";
+    const subtitle = station.lastPlaying ? station.lastPlaying : `${station.genre} • ${station.listeners} listeners`;
 
-  const renderListItem = (station: Station, index?: number) => (
-    <List.Item
-      key={station.id}
-      icon={{
-        source: station.image,
-        fallback: Icon.Music,
-      }}
-      title={station.title}
-      subtitle={station.genre}
-      keywords={[station.genre, station.dj]}
-      accessories={[
-        { text: `${station.listeners} listeners` },
-        isFavorite(station.id) ? { icon: { source: Icon.Star, tintColor: "#FFD700" } } : {},
-      ].filter((a) => Object.keys(a).length > 0)}
-      actions={stationActions(station, index)}
-    />
-  );
+    return (
+      <Grid.Item
+        key={station.id}
+        content={{
+          value: {
+            source: station.xlimage || station.largeimage || station.image,
+            fallback: Icon.Music,
+          },
+          tooltip: `${station.description}\n\n${nowPlaying}\n\n${station.listeners} listeners`,
+        }}
+        title={station.title}
+        subtitle={subtitle}
+        keywords={[station.genre, station.dj]}
+        actions={stationActions(station, index)}
+      />
+    );
+  };
+
+  const renderListItem = (station: Station, index?: number) => {
+    const accessories = [
+      station.lastPlaying ? { text: `🎵 ${station.lastPlaying}`, tooltip: "Now Playing" } : {},
+      { text: `${station.listeners} listeners` },
+      isFavorite(station.id) ? { icon: { source: Icon.Star, tintColor: "#FFD700" } } : {},
+    ].filter((a) => Object.keys(a).length > 0);
+
+    return (
+      <List.Item
+        key={station.id}
+        icon={{
+          source: station.image,
+          fallback: Icon.Music,
+        }}
+        title={station.title}
+        subtitle={station.genre}
+        keywords={[station.genre, station.dj]}
+        accessories={accessories}
+        actions={stationActions(station, index)}
+      />
+    );
+  };
 
   if (viewMode === "grid") {
     return (

@@ -22,6 +22,10 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
   - Falls back to system default if no supported player is found
 - **High-Quality Streams**: Uses MP3 format for best compatibility
 - **Quick Feedback**: Shows loading status and confirms which player opened
+- **Now Playing**: See what's currently playing on each station
+  - Grid view shows current track in subtitle
+  - List view shows with 🎵 icon
+  - Auto-refreshes every 30 seconds
 
 ### 🎨 Beautiful Interface
 - **Grid View**: Visual 3-column layout with station artwork
