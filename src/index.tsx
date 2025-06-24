@@ -1,11 +1,12 @@
-import { Action, ActionPanel, Grid, Icon, List, Keyboard } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
 import { Station } from "./types/station";
 import { useFavorites } from "./hooks/useFavorites";
-import { getRecentlyPlayed, RecentItem } from "./utils/storage";
+import { getRecentlyPlayed, RecentItem, clearRecentlyPlayed } from "./utils/storage";
 import { useViewMode } from "./hooks/useViewMode";
+import { useViewOptions } from "./hooks/useViewOptions";
 
 export default function Command() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -14,6 +15,7 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const { isFavorite, toggleFavoriteStation } = useFavorites();
   const { viewMode, toggleViewMode } = useViewMode();
+  const { viewOptions, toggleSortOrder, toggleGroupBy } = useViewOptions();
 
   useEffect(() => {
     loadData();
@@ -25,6 +27,23 @@ export default function Command() {
     setStations(fetchedStations);
     setRecentlyPlayed(recent);
     setIsLoading(false);
+  }
+
+  async function handleClearRecentlyPlayed() {
+    try {
+      await clearRecentlyPlayed();
+      setRecentlyPlayed([]);
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Cleared Recently Played",
+      });
+    } catch (error) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Failed to clear recently played",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   }
 
   // Filter stations based on search
@@ -53,6 +72,14 @@ export default function Command() {
   // Sort each category
   const sortStations = (stationList: Station[]) => {
     return stationList.sort((a, b) => {
+      // Sort by listeners if that option is selected
+      if (viewOptions.sortOrder === "listeners") {
+        const aListeners = parseInt(a.listeners) || 0;
+        const bListeners = parseInt(b.listeners) || 0;
+        return bListeners - aListeners; // Higher listeners first
+      }
+
+      // Default sort: prioritize search matches, then alphabetical
       if (searchText) {
         const searchLower = searchText.toLowerCase();
         const aNameMatch = a.title.toLowerCase().includes(searchLower);
@@ -101,12 +128,36 @@ export default function Command() {
           content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
           shortcut={{ modifiers: ["cmd"], key: "c" }}
         />
-        <Action
-          title="Refresh Stations"
-          icon={Icon.ArrowClockwise}
-          onAction={loadData}
-          shortcut={{ modifiers: ["cmd"], key: "r" }}
-        />
+        <ActionPanel.Section>
+          <Action
+            title={`Sort by ${viewOptions.sortOrder === "listeners" ? "Name" : "Listeners"}`}
+            icon={Icon.ArrowUp}
+            onAction={toggleSortOrder}
+            shortcut={{ modifiers: ["cmd"], key: "s" }}
+          />
+          <Action
+            title={`${viewOptions.groupBy === "genre" ? "Ungroup" : "Group"} by Genre`}
+            icon={Icon.TextDocument}
+            onAction={toggleGroupBy}
+            shortcut={{ modifiers: ["cmd"], key: "g" }}
+          />
+          <Action
+            title="Refresh Stations"
+            icon={Icon.ArrowClockwise}
+            onAction={loadData}
+            shortcut={{ modifiers: ["cmd"], key: "r" }}
+          />
+        </ActionPanel.Section>
+        {recentlyPlayed.length > 0 && (
+          <ActionPanel.Section>
+            <Action
+              title="Clear Recently Played"
+              icon={Icon.Trash}
+              style={Action.Style.Destructive}
+              onAction={handleClearRecentlyPlayed}
+            />
+          </ActionPanel.Section>
+        )}
       </ActionPanel>
     );
   };
@@ -146,6 +197,30 @@ export default function Command() {
     />
   );
 
+  // Group stations by genre if enabled
+  const getGenreGroups = (stationList: Station[]) => {
+    if (viewOptions.groupBy !== "genre") {
+      return null;
+    }
+
+    const groups = new Map<string, Station[]>();
+    stationList.forEach((station) => {
+      const genre = station.genre || "Other";
+      if (!groups.has(genre)) {
+        groups.set(genre, []);
+      }
+      groups.get(genre)!.push(station);
+    });
+
+    // Sort genres alphabetically and sort stations within each genre
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([genre, stations]) => ({
+        genre,
+        stations: sortStations(stations),
+      }));
+  };
+
   if (viewMode === "grid") {
     return (
       <Grid
@@ -155,25 +230,33 @@ export default function Command() {
         searchBarPlaceholder="Search stations by name, genre, or description..."
         throttle
       >
-        {favoriteStations.length > 0 && (
+        {favoriteStations.length > 0 && !viewOptions.groupBy && (
           <Grid.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
             {sortStations(favoriteStations).map((station, i) => renderGridItem(station, i))}
           </Grid.Section>
         )}
 
-        {recentStations.length > 0 && (
+        {recentStations.length > 0 && !viewOptions.groupBy && (
           <Grid.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
             {sortStations(recentStations).map((station, i) => renderGridItem(station, favoriteStations.length + i))}
           </Grid.Section>
         )}
 
-        {otherStations.length > 0 && (
-          <Grid.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
-            {sortStations(otherStations).map((station, i) =>
-              renderGridItem(station, favoriteStations.length + recentStations.length + i),
+        {viewOptions.groupBy === "genre"
+          ? // Group by genre
+            getGenreGroups(filteredStations)?.map(({ genre, stations }) => (
+              <Grid.Section key={genre} title={genre} subtitle={`${stations.length} stations`}>
+                {stations.map((station, i) => renderGridItem(station, i))}
+              </Grid.Section>
+            ))
+          : // Default grouping
+            otherStations.length > 0 && (
+              <Grid.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
+                {sortStations(otherStations).map((station, i) =>
+                  renderGridItem(station, favoriteStations.length + recentStations.length + i),
+                )}
+              </Grid.Section>
             )}
-          </Grid.Section>
-        )}
 
         {filteredStations.length === 0 && !isLoading && (
           <Grid.EmptyView
@@ -192,25 +275,33 @@ export default function Command() {
         searchBarPlaceholder="Search stations by name, genre, or description..."
         throttle
       >
-        {favoriteStations.length > 0 && (
+        {favoriteStations.length > 0 && !viewOptions.groupBy && (
           <List.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
             {sortStations(favoriteStations).map((station, i) => renderListItem(station, i))}
           </List.Section>
         )}
 
-        {recentStations.length > 0 && (
+        {recentStations.length > 0 && !viewOptions.groupBy && (
           <List.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
             {sortStations(recentStations).map((station, i) => renderListItem(station, favoriteStations.length + i))}
           </List.Section>
         )}
 
-        {otherStations.length > 0 && (
-          <List.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
-            {sortStations(otherStations).map((station, i) =>
-              renderListItem(station, favoriteStations.length + recentStations.length + i),
+        {viewOptions.groupBy === "genre"
+          ? // Group by genre
+            getGenreGroups(filteredStations)?.map(({ genre, stations }) => (
+              <List.Section key={genre} title={genre} subtitle={`${stations.length} stations`}>
+                {stations.map((station, i) => renderListItem(station, i))}
+              </List.Section>
+            ))
+          : // Default grouping
+            otherStations.length > 0 && (
+              <List.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
+                {sortStations(otherStations).map((station, i) =>
+                  renderListItem(station, favoriteStations.length + recentStations.length + i),
+                )}
+              </List.Section>
             )}
-          </List.Section>
-        )}
 
         {filteredStations.length === 0 && !isLoading && (
           <List.EmptyView

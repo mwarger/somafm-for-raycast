@@ -69,3 +69,7 @@ export async function addToRecentlyPlayed(stationId: string): Promise<void> {
 
   await LocalStorage.setItem(STORAGE_KEYS.RECENTLY_PLAYED, JSON.stringify(trimmed));
 }
+
+export async function clearRecentlyPlayed(): Promise<void> {
+  await LocalStorage.setItem(STORAGE_KEYS.RECENTLY_PLAYED, JSON.stringify([]));
+}
