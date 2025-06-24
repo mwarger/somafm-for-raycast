@@ -6,6 +6,8 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
 
 ## Features
 
+### 🎯 Current Features (v1.0)
+
 ### 🚀 Quick Access
 - **Quick Play Shortcuts**: Create Raycast Quicklinks for instant access to favorite stations
   - Type "Play Groove Salad" directly in Raycast
@@ -119,12 +121,26 @@ This extension is built with:
 - TypeScript
 - React
 
-To contribute:
+### Project Structure
+```
+src/
+├── index.tsx           # Main browse command
+├── play-station.tsx    # Deeplink handler for quick play
+├── menu-bar.tsx        # Menu bar extension
+├── types/              # TypeScript interfaces
+├── utils/              # API, player, and storage utilities
+└── hooks/              # React hooks for state management
+```
+
+### To Contribute
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Run `npm run lint` to ensure code quality
 5. Submit a pull request
+
+### Feature Status
+See [docs/feature-status.md](docs/feature-status.md) for detailed progress on all features.
 
 ## License
 
