@@ -57,11 +57,12 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
 - `1-9` - Quick play stations 1-9
 - `⌘+F` - Toggle favorite
 - `⌘+Shift+S` - Create quick play shortcut (favorites only)
+- `⌘+Shift+C` - Copy quick play link (favorites only)
 - `⌘+Shift+V` - Switch between grid/list view
 - `⌘+1` - Sort by name
 - `⌘+2` - Sort by listeners
 - `⌘+G` - Group by genre
-- `⌘+C` - Copy stream URL
+- `⌘+⌥+C` - Copy stream URL
 - `⌘+R` - Refresh station list
 
 ## Installation

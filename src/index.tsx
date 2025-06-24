@@ -60,7 +60,10 @@ export default function Command() {
   });
 
   // Separate stations into categories
-  const favoriteStations = filteredStations.filter((station) => isFavorite(station.id));
+  // Favorites should show ALL favorites, not just filtered ones
+  const favoriteStations = stations.filter((station) => isFavorite(station.id));
+  
+  // For recently played and other stations, use filtered results
   const recentStations = filteredStations.filter((station) => {
     const isRecent = recentlyPlayed.some((item) => item.stationId === station.id);
     return isRecent; // Show ALL recently played stations, even if they're favorites
@@ -178,27 +181,48 @@ export default function Command() {
           shortcut={{ modifiers: ["cmd"], key: "f" }}
         />
         {isFavorite(station.id) && (
-          <Action
-            title="Create Quick Play Shortcut"
-            icon={Icon.Link}
-            onAction={async () => {
-              const deeplink = createDeeplink({
+          <>
+            <Action
+              title="Create Quick Play Shortcut"
+              icon={Icon.Link}
+              onAction={async () => {
+                const deeplink = createDeeplink({
+                  command: "play-station",
+                  context: {
+                    stationId: station.id,
+                    stationName: station.title,
+                  },
+                });
+
+                // Open Raycast's Create Quicklink command with the deeplink
+                // User can customize the name (we provide a good default)
+                await open(
+                  `raycast://extensions/raycast/raycast/create-quicklink?name=${encodeURIComponent(
+                    `Play ${station.title}`,
+                  )}&link=${encodeURIComponent(deeplink)}`,
+                );
+                
+                await showToast({
+                  style: Toast.Style.Success,
+                  title: "Creating Quick Play Shortcut",
+                  message: "Customize the name and assign a hotkey if desired",
+                });
+              }}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
+            />
+            <Action.CopyToClipboard
+              title="Copy Quick Play Link"
+              content={createDeeplink({
                 command: "play-station",
                 context: {
                   stationId: station.id,
                   stationName: station.title,
                 },
-              });
-
-              // Open Raycast's Create Quicklink command with the deeplink
-              await open(
-                `raycast://extensions/raycast/raycast/create-quicklink?name=${encodeURIComponent(
-                  `Play ${station.title}`,
-                )}&link=${encodeURIComponent(deeplink)}`,
-              );
-            }}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
-          />
+              })}
+              icon={Icon.CopyClipboard}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+            />
+          </>
         )}
         <Action
           title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
@@ -209,7 +233,7 @@ export default function Command() {
         <Action.CopyToClipboard
           title="Copy Stream URL"
           content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
-          shortcut={{ modifiers: ["cmd"], key: "c" }}
+          shortcut={{ modifiers: ["cmd", "opt"], key: "c" }}
         />
         <ActionPanel.Section>
           <Action
@@ -229,8 +253,8 @@ export default function Command() {
             icon={
               viewOptions.sortBy === "listeners"
                 ? viewOptions.sortDirection === "asc"
-                  ? Icon.ArrowUp
-                  : Icon.ArrowDown
+                  ? Icon.ArrowDown
+                  : Icon.ArrowUp
                 : Icon.TwoPeople
             }
             onAction={() => setSortBy("listeners")}
@@ -307,7 +331,7 @@ export default function Command() {
         searchBarPlaceholder="Search stations by name, genre, or description..."
         throttle
       >
-        {favoriteStations.length > 0 && !viewOptions.groupBy && (
+        {favoriteStations.length > 0 && (
           <Grid.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
             {sortStations(favoriteStations).map((station, i) => renderGridItem(station, i))}
           </Grid.Section>
@@ -352,7 +376,7 @@ export default function Command() {
         searchBarPlaceholder="Search stations by name, genre, or description..."
         throttle
       >
-        {favoriteStations.length > 0 && !viewOptions.groupBy && (
+        {favoriteStations.length > 0 && (
           <List.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
             {sortStations(favoriteStations).map((station, i) => renderListItem(station, i))}
           </List.Section>
