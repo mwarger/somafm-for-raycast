@@ -137,7 +137,8 @@ src/
 2. Create a feature branch
 3. Make your changes
 4. Run `npm run lint` to ensure code quality
-5. Submit a pull request
+5. Run `npm test` to ensure tests pass
+6. Submit a pull request
 
 ### Feature Status
 See [docs/feature-status.md](docs/feature-status.md) for detailed progress on all features.
