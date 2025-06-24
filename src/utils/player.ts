@@ -40,13 +40,13 @@ export async function playStation(station: Station): Promise<void> {
     return;
   }
 
-  try {
-    // Show loading toast
-    await showToast({
-      style: Toast.Style.Animated,
-      title: `Opening ${station.title}...`,
-    });
+  // Show loading toast
+  const toast = await showToast({
+    style: Toast.Style.Animated,
+    title: `Opening ${station.title}...`,
+  });
 
+  try {
     // Try different playback methods
 
     // Track as recently played
@@ -55,7 +55,9 @@ export async function playStation(station: Station): Promise<void> {
     // Method 1: Try IINA (popular macOS media player)
     if (await checkPlayerInstalled("iina")) {
       await execAsync(`iina "${mp3Stream.url}"`);
-      await showHUD(`Playing ${station.title} in IINA`);
+      toast.style = Toast.Style.Success;
+      toast.title = `Playing ${station.title}`;
+      toast.message = "Opened in IINA";
       await closeMainWindow();
       return;
     }
@@ -63,7 +65,9 @@ export async function playStation(station: Station): Promise<void> {
     // Method 2: Try VLC
     if (await checkPlayerInstalled("vlc")) {
       await execAsync(`vlc "${mp3Stream.url}" --intf dummy --play-and-exit`);
-      await showHUD(`Playing ${station.title} in VLC`);
+      toast.style = Toast.Style.Success;
+      toast.title = `Playing ${station.title}`;
+      toast.message = "Opened in VLC";
       await closeMainWindow();
       return;
     }
@@ -73,20 +77,21 @@ export async function playStation(station: Station): Promise<void> {
     if (directUrl) {
       // Try opening direct stream URL in Music.app
       await execAsync(`open -a "Music" "${directUrl}"`);
-      await showHUD(`Playing ${station.title} in Music`);
+      toast.style = Toast.Style.Success;
+      toast.title = `Playing ${station.title}`;
+      toast.message = "Opened in Music";
       await closeMainWindow();
       return;
     }
 
     // Method 4: Fallback to default behavior (will likely download)
     await execAsync(`open "${mp3Stream.url}"`);
-    await showHUD(`Opening ${station.title}`);
+    toast.style = Toast.Style.Success;
+    toast.title = `Opened ${station.title}`;
     await closeMainWindow();
   } catch (error) {
-    await showToast({
-      style: Toast.Style.Failure,
-      title: `Failed to play ${station.title}`,
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    toast.style = Toast.Style.Failure;
+    toast.title = `Failed to play ${station.title}`;
+    toast.message = error instanceof Error ? error.message : "Unknown error";
   }
 }
