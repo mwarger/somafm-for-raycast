@@ -257,6 +257,29 @@ Total: ~2-3 weeks for full implementation
 5. Grid view option
 6. Advanced player integration
 
+## Design Decisions (Phase 2)
+
+### Resolved Decisions
+1. **Default View**: Grid view with 3 columns (toggle available for list)
+2. **Grid Display**: Show station image, title, and genre
+3. **Favorites**: 
+   - Display at top of list
+   - Use star icon (matching SomaFM site)
+   - Keyboard shortcut for toggle (⌘+F)
+4. **Recently Played**: 
+   - Track 5 most recent stations
+   - Show in separate section
+5. **Keyboard Shortcuts**: 
+   - Number keys (1-9) for quick access
+   - ⌘+F for favorite toggle
+   - ⌘+R for refresh
+6. **Implementation Priority**:
+   - Grid view with images (first)
+   - Favorites system
+   - Recently played tracking
+   - View toggle
+   - Additional shortcuts
+
 ## Questions to Resolve
 1. Should we support multiple players or stick with system default?
 2. How much station metadata should we display?

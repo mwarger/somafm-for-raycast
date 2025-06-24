@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
@@ -42,18 +42,25 @@ export default function Command() {
     });
 
   return (
-    <List
+    <Grid
+      columns={3}
       isLoading={isLoading}
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search stations by name, genre, or description..."
       throttle
     >
       {filteredStations.map((station) => (
-        <List.Item
+        <Grid.Item
           key={station.id}
+          content={{
+            value: {
+              source: station.xlimage || station.largeimage || station.image,
+              fallback: Icon.Music,
+            },
+            tooltip: station.description,
+          }}
           title={station.title}
           subtitle={station.genre}
-          accessories={[{ text: `${station.listeners} listeners` }]}
           actions={
             <ActionPanel>
               <Action title="Play Station" onAction={() => playStation(station)} />
@@ -62,10 +69,16 @@ export default function Command() {
                 content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
                 shortcut={{ modifiers: ["cmd"], key: "c" }}
               />
+              <Action
+                title="Refresh Stations"
+                icon={Icon.ArrowClockwise}
+                onAction={loadStations}
+                shortcut={{ modifiers: ["cmd"], key: "r" }}
+              />
             </ActionPanel>
           }
         />
       ))}
-    </List>
+    </Grid>
   );
 }
