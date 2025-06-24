@@ -93,11 +93,31 @@ export default function Command() {
   };
 
   // Create a flat list of all visible stations to assign number shortcuts
-  const allVisibleStations = [
-    ...sortStations(favoriteStations),
-    ...sortStations(recentStations),
-    ...sortStations(otherStations),
-  ];
+  let allVisibleStations: Station[] = [];
+
+  if (viewOptions.groupBy === "genre") {
+    // When grouping by genre, collect all stations in order they appear
+    const genreGroups = getGenreGroups(filteredStations);
+    if (genreGroups) {
+      const stationsList: Station[] = [];
+      genreGroups.forEach(({ stations }) => {
+        stations.forEach((station) => {
+          // Only add if not already in the list (to avoid duplicate shortcuts)
+          if (!stationsList.some((s) => s.id === station.id)) {
+            stationsList.push(station);
+          }
+        });
+      });
+      allVisibleStations = stationsList;
+    }
+  } else {
+    // Default grouping
+    allVisibleStations = [
+      ...sortStations(favoriteStations),
+      ...sortStations(recentStations),
+      ...sortStations(otherStations),
+    ];
+  }
 
   const stationActions = (station: Station, index?: number) => {
     // Find the station's position in the flat list
@@ -205,11 +225,17 @@ export default function Command() {
 
     const groups = new Map<string, Station[]>();
     stationList.forEach((station) => {
-      const genre = station.genre || "Other";
-      if (!groups.has(genre)) {
-        groups.set(genre, []);
-      }
-      groups.get(genre)!.push(station);
+      const genreString = station.genre || "Other";
+      // Split genres by pipe character and trim whitespace
+      const genres = genreString.split("|").map((g) => g.trim());
+
+      // Add station to each genre group
+      genres.forEach((genre) => {
+        if (!groups.has(genre)) {
+          groups.set(genre, []);
+        }
+        groups.get(genre)!.push(station);
+      });
     });
 
     // Sort genres alphabetically and sort stations within each genre
