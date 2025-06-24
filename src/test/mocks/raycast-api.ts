@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock Raycast API components and functions
 export const showToast = vi.fn();
@@ -9,37 +9,37 @@ export const launchCommand = vi.fn();
 
 export const Toast = {
   Style: {
-    Success: 'success',
-    Failure: 'failure',
-    Animated: 'animated',
+    Success: "success",
+    Failure: "failure",
+    Animated: "animated",
   },
 };
 
 export const Icon = {
-  Music: 'music-icon',
-  Star: 'star-icon',
-  List: 'list-icon',
-  Grid: 'grid-icon',
-  ArrowClockwise: 'arrow-clockwise-icon',
-  ArrowUp: 'arrow-up-icon',
-  ArrowDown: 'arrow-down-icon',
-  TwoPeople: 'two-people-icon',
-  TextDocument: 'text-document-icon',
-  Link: 'link-icon',
-  CopyClipboard: 'copy-clipboard-icon',
-  Trash: 'trash-icon',
-  MagnifyingGlass: 'magnifying-glass-icon',
+  Music: "music-icon",
+  Star: "star-icon",
+  List: "list-icon",
+  Grid: "grid-icon",
+  ArrowClockwise: "arrow-clockwise-icon",
+  ArrowUp: "arrow-up-icon",
+  ArrowDown: "arrow-down-icon",
+  TwoPeople: "two-people-icon",
+  TextDocument: "text-document-icon",
+  Link: "link-icon",
+  CopyClipboard: "copy-clipboard-icon",
+  Trash: "trash-icon",
+  MagnifyingGlass: "magnifying-glass-icon",
 };
 
 export const Action = {
   Style: {
-    Destructive: 'destructive',
+    Destructive: "destructive",
   },
 };
 
 export const LaunchType = {
-  UserInitiated: 'user-initiated',
-  Background: 'background',
+  UserInitiated: "user-initiated",
+  Background: "background",
 };
 
 export const LocalStorage = {
@@ -50,38 +50,31 @@ export const LocalStorage = {
 };
 
 // Mock React components
-export const List = Object.assign(
-  ({ children }: any) => children,
-  {
-    Item: ({ children }: any) => children,
-    Section: ({ children }: any) => children,
-    EmptyView: ({ children }: any) => children,
-  }
-);
+interface MockComponentProps {
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}
 
-export const Grid = Object.assign(
-  ({ children }: any) => children,
-  {
-    Item: ({ children }: any) => children,
-    Section: ({ children }: any) => children,
-    EmptyView: ({ children }: any) => children,
-  }
-);
+export const List = Object.assign(({ children }: MockComponentProps) => children, {
+  Item: ({ children }: MockComponentProps) => children,
+  Section: ({ children }: MockComponentProps) => children,
+  EmptyView: ({ children }: MockComponentProps) => children,
+});
 
-export const ActionPanel = Object.assign(
-  ({ children }: any) => children,
-  {
-    Section: ({ children }: any) => children,
-  }
-);
+export const Grid = Object.assign(({ children }: MockComponentProps) => children, {
+  Item: ({ children }: MockComponentProps) => children,
+  Section: ({ children }: MockComponentProps) => children,
+  EmptyView: ({ children }: MockComponentProps) => children,
+});
 
-export const MenuBarExtra = Object.assign(
-  ({ children }: any) => children,
-  {
-    Item: ({ children }: any) => children,
-    Section: ({ children }: any) => children,
-  }
-);
+export const ActionPanel = Object.assign(({ children }: MockComponentProps) => children, {
+  Section: ({ children }: MockComponentProps) => children,
+});
+
+export const MenuBarExtra = Object.assign(({ children }: MockComponentProps) => children, {
+  Item: ({ children }: MockComponentProps) => children,
+  Section: ({ children }: MockComponentProps) => children,
+});
 
 export const Keyboard = {
   KeyEquivalent: {},

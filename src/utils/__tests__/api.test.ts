@@ -1,26 +1,24 @@
-import { describe, it, expect, vi } from 'vitest';
-import { showToast, Toast } from '@raycast/api';
-import { fetchStations } from '../api';
+import { describe, it, expect, vi } from "vitest";
+import { showToast, Toast } from "@raycast/api";
+import { fetchStations } from "../api";
 
-describe('fetchStations', () => {
-  it('should fetch and return stations from the API', async () => {
+describe("fetchStations", () => {
+  it("should fetch and return stations from the API", async () => {
     const mockStations = [
       {
-        id: 'groovesalad',
-        title: 'Groove Salad',
-        description: 'A nicely chilled plate of ambient/downtempo beats',
-        dj: 'Rusty Hodge',
-        genre: 'ambient|electronic',
-        image: 'https://api.somafm.com/img/groovesalad120.png',
-        largeimage: 'https://api.somafm.com/logos/256/groovesalad256.png',
-        xlimage: 'https://api.somafm.com/logos/512/groovesalad512.png',
-        twitter: '@SomaFM',
-        updated: '1234567890',
-        playlists: [
-          { url: 'https://api.somafm.com/groovesalad.pls', format: 'mp3', quality: 'highest' },
-        ],
-        listeners: '123',
-        lastPlaying: 'Some Artist - Some Track',
+        id: "groovesalad",
+        title: "Groove Salad",
+        description: "A nicely chilled plate of ambient/downtempo beats",
+        dj: "Rusty Hodge",
+        genre: "ambient|electronic",
+        image: "https://api.somafm.com/img/groovesalad120.png",
+        largeimage: "https://api.somafm.com/logos/256/groovesalad256.png",
+        xlimage: "https://api.somafm.com/logos/512/groovesalad512.png",
+        twitter: "@SomaFM",
+        updated: "1234567890",
+        playlists: [{ url: "https://api.somafm.com/groovesalad.pls", format: "mp3", quality: "highest" }],
+        listeners: "123",
+        lastPlaying: "Some Artist - Some Track",
       },
     ];
 
@@ -28,43 +26,47 @@ describe('fetchStations', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ channels: mockStations }),
-      } as Response)
+      } as Response),
     );
 
     const result = await fetchStations();
 
-    expect(fetch).toHaveBeenCalledWith('https://somafm.com/channels.json');
+    expect(fetch).toHaveBeenCalledWith("https://somafm.com/channels.json");
     expect(result).toEqual(mockStations);
   });
 
-  it('should return empty array and show toast when the API request fails', async () => {
+  it("should return empty array and show toast when the API request fails", async () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error',
-      } as Response)
+        statusText: "Internal Server Error",
+      } as Response),
     );
 
     const result = await fetchStations();
 
     expect(result).toEqual([]);
-    expect(showToast).toHaveBeenCalledWith(expect.objectContaining({
-      style: Toast.Style.Failure,
-      title: 'Failed to fetch stations',
-    }));
+    expect(showToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        style: Toast.Style.Failure,
+        title: "Failed to fetch stations",
+      }),
+    );
   });
 
-  it('should return empty array and show toast when fetch throws', async () => {
-    global.fetch = vi.fn(() => Promise.reject(new Error('Network error')));
+  it("should return empty array and show toast when fetch throws", async () => {
+    global.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
 
     const result = await fetchStations();
 
     expect(result).toEqual([]);
-    expect(showToast).toHaveBeenCalledWith(expect.objectContaining({
-      style: Toast.Style.Failure,
-      title: 'Failed to fetch stations',
-      message: 'Network error',
-    }));
+    expect(showToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        style: Toast.Style.Failure,
+        title: "Failed to fetch stations",
+        message: "Network error",
+      }),
+    );
   });
 });
