@@ -1,4 +1,4 @@
-import { MenuBarExtra, Icon, closeMainWindow } from "@raycast/api";
+import { MenuBarExtra, Icon, closeMainWindow, launchCommand, LaunchType } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { playStation } from "./utils/player";
 import { Station } from "./types/station";
@@ -45,7 +45,8 @@ export default function Command() {
               <MenuBarExtra.Item
                 key={station.id}
                 title={station.title}
-                subtitle={station.genre}
+                subtitle={station.lastPlaying || station.genre}
+                tooltip={station.lastPlaying ? `Now Playing: ${station.lastPlaying}` : station.description}
                 icon={station.image ? { source: station.image } : Icon.Music}
                 onAction={() => handlePlayStation(station)}
               />
@@ -55,19 +56,35 @@ export default function Command() {
             <MenuBarExtra.Item
               title="Browse All Stations"
               icon={Icon.List}
-              onAction={() => {
-                closeMainWindow();
-                // This will open the main browse command
+              onAction={async () => {
+                await launchCommand({
+                  name: "index",
+                  type: LaunchType.UserInitiated,
+                });
               }}
             />
           </MenuBarExtra.Section>
         </>
       ) : (
-        <MenuBarExtra.Item
-          title="No favorite stations yet"
-          subtitle="Star stations in the browser to see them here"
-          icon={Icon.Star}
-        />
+        <>
+          <MenuBarExtra.Item
+            title="No favorite stations yet"
+            subtitle="Star stations in the browser to see them here"
+            icon={Icon.Star}
+          />
+          <MenuBarExtra.Section>
+            <MenuBarExtra.Item
+              title="Browse All Stations"
+              icon={Icon.List}
+              onAction={async () => {
+                await launchCommand({
+                  name: "index",
+                  type: LaunchType.UserInitiated,
+                });
+              }}
+            />
+          </MenuBarExtra.Section>
+        </>
       )}
     </MenuBarExtra>
   );

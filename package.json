@@ -17,7 +17,8 @@
       "name": "play-station",
       "title": "Play Station",
       "description": "Play a station via deeplink",
-      "mode": "no-view"
+      "mode": "no-view",
+      "disabledByDefault": true
     },
     {
       "name": "menu-bar",
