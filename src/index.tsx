@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Grid, Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List, Keyboard } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
@@ -65,36 +65,53 @@ export default function Command() {
     });
   };
 
-  const stationActions = (station: Station) => (
-    <ActionPanel>
-      <Action title="Play Station" onAction={() => playStation(station)} />
-      <Action
-        title={isFavorite(station.id) ? "Remove from Favorites" : "Add to Favorites"}
-        icon={Icon.Star}
-        onAction={() => toggleFavoriteStation(station.id, station.title)}
-        shortcut={{ modifiers: ["cmd"], key: "f" }}
-      />
-      <Action
-        title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
-        icon={viewMode === "grid" ? Icon.List : Icon.Grid}
-        onAction={toggleViewMode}
-        shortcut={{ modifiers: ["cmd", "shift"], key: "v" }}
-      />
-      <Action.CopyToClipboard
-        title="Copy Stream URL"
-        content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
-        shortcut={{ modifiers: ["cmd"], key: "c" }}
-      />
-      <Action
-        title="Refresh Stations"
-        icon={Icon.ArrowClockwise}
-        onAction={loadData}
-        shortcut={{ modifiers: ["cmd"], key: "r" }}
-      />
-    </ActionPanel>
-  );
+  // Create a flat list of all visible stations to assign number shortcuts
+  const allVisibleStations = [
+    ...sortStations(favoriteStations),
+    ...sortStations(recentStations),
+    ...sortStations(otherStations),
+  ];
 
-  const renderGridItem = (station: Station) => (
+  const stationActions = (station: Station, index?: number) => {
+    // Find the station's position in the flat list
+    const stationIndex = index ?? allVisibleStations.findIndex((s) => s.id === station.id);
+    const numberKey = stationIndex >= 0 && stationIndex < 9 ? String(stationIndex + 1) : undefined;
+
+    return (
+      <ActionPanel>
+        <Action
+          title="Play Station"
+          onAction={() => playStation(station)}
+          shortcut={numberKey ? { modifiers: [], key: numberKey as Keyboard.KeyEquivalent } : undefined}
+        />
+        <Action
+          title={isFavorite(station.id) ? "Remove from Favorites" : "Add to Favorites"}
+          icon={Icon.Star}
+          onAction={() => toggleFavoriteStation(station.id, station.title)}
+          shortcut={{ modifiers: ["cmd"], key: "f" }}
+        />
+        <Action
+          title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
+          icon={viewMode === "grid" ? Icon.List : Icon.Grid}
+          onAction={toggleViewMode}
+          shortcut={{ modifiers: ["cmd", "shift"], key: "v" }}
+        />
+        <Action.CopyToClipboard
+          title="Copy Stream URL"
+          content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
+          shortcut={{ modifiers: ["cmd"], key: "c" }}
+        />
+        <Action
+          title="Refresh Stations"
+          icon={Icon.ArrowClockwise}
+          onAction={loadData}
+          shortcut={{ modifiers: ["cmd"], key: "r" }}
+        />
+      </ActionPanel>
+    );
+  };
+
+  const renderGridItem = (station: Station, index?: number) => (
     <Grid.Item
       key={station.id}
       content={{
@@ -107,11 +124,11 @@ export default function Command() {
       title={station.title}
       subtitle={station.genre}
       keywords={[station.genre, station.dj]}
-      actions={stationActions(station)}
+      actions={stationActions(station, index)}
     />
   );
 
-  const renderListItem = (station: Station) => (
+  const renderListItem = (station: Station, index?: number) => (
     <List.Item
       key={station.id}
       icon={{
@@ -125,7 +142,7 @@ export default function Command() {
         { text: `${station.listeners} listeners` },
         isFavorite(station.id) ? { icon: { source: Icon.Star, tintColor: "#FFD700" } } : {},
       ].filter((a) => Object.keys(a).length > 0)}
-      actions={stationActions(station)}
+      actions={stationActions(station, index)}
     />
   );
 
@@ -140,19 +157,21 @@ export default function Command() {
       >
         {favoriteStations.length > 0 && (
           <Grid.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
-            {sortStations(favoriteStations).map(renderGridItem)}
+            {sortStations(favoriteStations).map((station, i) => renderGridItem(station, i))}
           </Grid.Section>
         )}
 
         {recentStations.length > 0 && (
           <Grid.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
-            {sortStations(recentStations).map(renderGridItem)}
+            {sortStations(recentStations).map((station, i) => renderGridItem(station, favoriteStations.length + i))}
           </Grid.Section>
         )}
 
         {otherStations.length > 0 && (
           <Grid.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
-            {sortStations(otherStations).map(renderGridItem)}
+            {sortStations(otherStations).map((station, i) =>
+              renderGridItem(station, favoriteStations.length + recentStations.length + i),
+            )}
           </Grid.Section>
         )}
 
@@ -175,19 +194,21 @@ export default function Command() {
       >
         {favoriteStations.length > 0 && (
           <List.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
-            {sortStations(favoriteStations).map(renderListItem)}
+            {sortStations(favoriteStations).map((station, i) => renderListItem(station, i))}
           </List.Section>
         )}
 
         {recentStations.length > 0 && (
           <List.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
-            {sortStations(recentStations).map(renderListItem)}
+            {sortStations(recentStations).map((station, i) => renderListItem(station, favoriteStations.length + i))}
           </List.Section>
         )}
 
         {otherStations.length > 0 && (
           <List.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
-            {sortStations(otherStations).map(renderListItem)}
+            {sortStations(otherStations).map((station, i) =>
+              renderListItem(station, favoriteStations.length + recentStations.length + i),
+            )}
           </List.Section>
         )}
 
