@@ -2,6 +2,7 @@ import { showHUD, closeMainWindow, showToast, Toast } from "@raycast/api";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { Station } from "../types/station";
+import { addToRecentlyPlayed } from "./storage";
 
 const execAsync = promisify(exec);
 
@@ -47,6 +48,9 @@ export async function playStation(station: Station): Promise<void> {
     });
 
     // Try different playback methods
+
+    // Track as recently played
+    await addToRecentlyPlayed(station.id);
 
     // Method 1: Try IINA (popular macOS media player)
     if (await checkPlayerInstalled("iina")) {
