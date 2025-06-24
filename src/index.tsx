@@ -1,10 +1,11 @@
-import { Action, ActionPanel, Grid, Icon } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
 import { Station } from "./types/station";
 import { useFavorites } from "./hooks/useFavorites";
 import { getRecentlyPlayed, RecentItem } from "./utils/storage";
+import { useViewMode } from "./hooks/useViewMode";
 
 export default function Command() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -12,6 +13,7 @@ export default function Command() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const { isFavorite, toggleFavoriteStation } = useFavorites();
+  const { viewMode, toggleViewMode } = useViewMode();
 
   useEffect(() => {
     loadData();
@@ -63,7 +65,36 @@ export default function Command() {
     });
   };
 
-  const renderStation = (station: Station) => (
+  const stationActions = (station: Station) => (
+    <ActionPanel>
+      <Action title="Play Station" onAction={() => playStation(station)} />
+      <Action
+        title={isFavorite(station.id) ? "Remove from Favorites" : "Add to Favorites"}
+        icon={Icon.Star}
+        onAction={() => toggleFavoriteStation(station.id, station.title)}
+        shortcut={{ modifiers: ["cmd"], key: "f" }}
+      />
+      <Action
+        title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
+        icon={viewMode === "grid" ? Icon.List : Icon.Grid}
+        onAction={toggleViewMode}
+        shortcut={{ modifiers: ["cmd", "shift"], key: "v" }}
+      />
+      <Action.CopyToClipboard
+        title="Copy Stream URL"
+        content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
+        shortcut={{ modifiers: ["cmd"], key: "c" }}
+      />
+      <Action
+        title="Refresh Stations"
+        icon={Icon.ArrowClockwise}
+        onAction={loadData}
+        shortcut={{ modifiers: ["cmd"], key: "r" }}
+      />
+    </ActionPanel>
+  );
+
+  const renderGridItem = (station: Station) => (
     <Grid.Item
       key={station.id}
       content={{
@@ -76,64 +107,98 @@ export default function Command() {
       title={station.title}
       subtitle={station.genre}
       keywords={[station.genre, station.dj]}
-      actions={
-        <ActionPanel>
-          <Action title="Play Station" onAction={() => playStation(station)} />
-          <Action
-            title={isFavorite(station.id) ? "Remove from Favorites" : "Add to Favorites"}
-            icon={Icon.Star}
-            onAction={() => toggleFavoriteStation(station.id, station.title)}
-            shortcut={{ modifiers: ["cmd"], key: "f" }}
-          />
-          <Action.CopyToClipboard
-            title="Copy Stream URL"
-            content={station.playlists.find((p) => p.format === "mp3")?.url || ""}
-            shortcut={{ modifiers: ["cmd"], key: "c" }}
-          />
-          <Action
-            title="Refresh Stations"
-            icon={Icon.ArrowClockwise}
-            onAction={loadData}
-            shortcut={{ modifiers: ["cmd"], key: "r" }}
-          />
-        </ActionPanel>
-      }
+      actions={stationActions(station)}
     />
   );
 
-  return (
-    <Grid
-      columns={3}
-      isLoading={isLoading}
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search stations by name, genre, or description..."
-      throttle
-    >
-      {favoriteStations.length > 0 && (
-        <Grid.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
-          {sortStations(favoriteStations).map(renderStation)}
-        </Grid.Section>
-      )}
-
-      {recentStations.length > 0 && (
-        <Grid.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
-          {sortStations(recentStations).map(renderStation)}
-        </Grid.Section>
-      )}
-
-      {otherStations.length > 0 && (
-        <Grid.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
-          {sortStations(otherStations).map(renderStation)}
-        </Grid.Section>
-      )}
-
-      {filteredStations.length === 0 && !isLoading && (
-        <Grid.EmptyView
-          icon={Icon.MagnifyingGlass}
-          title="No Stations Found"
-          description="Try adjusting your search query"
-        />
-      )}
-    </Grid>
+  const renderListItem = (station: Station) => (
+    <List.Item
+      key={station.id}
+      icon={{
+        source: station.image,
+        fallback: Icon.Music,
+      }}
+      title={station.title}
+      subtitle={station.genre}
+      keywords={[station.genre, station.dj]}
+      accessories={[
+        { text: `${station.listeners} listeners` },
+        isFavorite(station.id) ? { icon: { source: Icon.Star, tintColor: "#FFD700" } } : {},
+      ].filter((a) => Object.keys(a).length > 0)}
+      actions={stationActions(station)}
+    />
   );
+
+  if (viewMode === "grid") {
+    return (
+      <Grid
+        columns={3}
+        isLoading={isLoading}
+        onSearchTextChange={setSearchText}
+        searchBarPlaceholder="Search stations by name, genre, or description..."
+        throttle
+      >
+        {favoriteStations.length > 0 && (
+          <Grid.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
+            {sortStations(favoriteStations).map(renderGridItem)}
+          </Grid.Section>
+        )}
+
+        {recentStations.length > 0 && (
+          <Grid.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
+            {sortStations(recentStations).map(renderGridItem)}
+          </Grid.Section>
+        )}
+
+        {otherStations.length > 0 && (
+          <Grid.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
+            {sortStations(otherStations).map(renderGridItem)}
+          </Grid.Section>
+        )}
+
+        {filteredStations.length === 0 && !isLoading && (
+          <Grid.EmptyView
+            icon={Icon.MagnifyingGlass}
+            title="No Stations Found"
+            description="Try adjusting your search query"
+          />
+        )}
+      </Grid>
+    );
+  } else {
+    return (
+      <List
+        isLoading={isLoading}
+        onSearchTextChange={setSearchText}
+        searchBarPlaceholder="Search stations by name, genre, or description..."
+        throttle
+      >
+        {favoriteStations.length > 0 && (
+          <List.Section title="Favorites" subtitle={`${favoriteStations.length} stations`}>
+            {sortStations(favoriteStations).map(renderListItem)}
+          </List.Section>
+        )}
+
+        {recentStations.length > 0 && (
+          <List.Section title="Recently Played" subtitle={`${recentStations.length} stations`}>
+            {sortStations(recentStations).map(renderListItem)}
+          </List.Section>
+        )}
+
+        {otherStations.length > 0 && (
+          <List.Section title="All Stations" subtitle={`${otherStations.length} stations`}>
+            {sortStations(otherStations).map(renderListItem)}
+          </List.Section>
+        )}
+
+        {filteredStations.length === 0 && !isLoading && (
+          <List.EmptyView
+            icon={Icon.MagnifyingGlass}
+            title="No Stations Found"
+            description="Try adjusting your search query"
+          />
+        )}
+      </List>
+    );
+  }
 }
