@@ -6,6 +6,16 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
 
 ## Features
 
+### 🚀 Quick Access
+- **Quick Play Shortcuts**: Create Raycast Quicklinks for instant access to favorite stations
+  - Type "Play Groove Salad" directly in Raycast
+  - Assign custom names and global hotkeys
+  - Press `⌘+Shift+S` on any favorite station to create a shortcut
+- **Menu Bar Access**: Always-visible menu bar icon shows your favorite stations
+  - Click the 🎵 icon in your menu bar
+  - Play any favorite station with one click
+  - Updates automatically when you add/remove favorites
+
 ### 🎵 Stream Playback
 - **Smart Player Detection**: Automatically plays streams in your preferred media player
   - Supports IINA, VLC, and Music.app
@@ -25,19 +35,32 @@ Browse and play [SomaFM](https://somafm.com) internet radio stations directly fr
   - Toggle with `⌘+F` or the star action
   - Persists between sessions
 - **Recently Played**: Automatically tracks your last 5 played stations
-  - Helps you rediscover stations you enjoyed
-  - Separate section for easy access
+  - Shows ALL recently played stations (including favorites)
+  - Stations appear in both Recently Played AND their regular section
+  - Clear history with the menu action when needed
+  - Helps you quickly return to stations you just discovered
 
 ### 🔍 Smart Search
 - Search by station name, genre, or description
 - Prioritizes name matches for better results
 - Real-time filtering as you type
 
+### 📊 Organization & Sorting
+- **Sort Options**: 
+  - Sort by Name (`⌘+1`) - A-Z or Z-A
+  - Sort by Listeners (`⌘+2`) - Least to most or most to least
+- **Genre Grouping**: Toggle genre groups with `⌘+G`
+- **Station Sections**: Favorites → Recently Played → All Stations
+
 ### ⌨️ Keyboard Shortcuts
 - `Enter` - Play selected station
 - `1-9` - Quick play stations 1-9
 - `⌘+F` - Toggle favorite
+- `⌘+Shift+S` - Create quick play shortcut (favorites only)
 - `⌘+Shift+V` - Switch between grid/list view
+- `⌘+1` - Sort by name
+- `⌘+2` - Sort by listeners
+- `⌘+G` - Group by genre
 - `⌘+C` - Copy stream URL
 - `⌘+R` - Refresh station list
 
@@ -58,11 +81,25 @@ Without these, streams will open in Music.app or your default browser.
 
 ## Usage
 
+### Browse & Play
 1. Open Raycast (`⌘+Space` by default)
 2. Type "soma" or "Browse SomaFM Stations"
 3. Browse stations in the grid or search for specific genres/stations
 4. Press `Enter` or use number keys `1-9` to play
 5. Use `⌘+F` to favorite stations you love
+
+### Quick Play Shortcuts
+1. Favorite a station with `⌘+F`
+2. Press `⌘+Shift+S` to create a quick play shortcut
+3. Name it whatever you want (e.g., "Play Groove Salad", "Chill", "Work Music")
+4. Now type that name directly in Raycast to play instantly
+5. Optionally assign a global hotkey for even faster access
+
+### Menu Bar
+1. Look for the 🎵 icon in your menu bar
+2. Click to see all your favorite stations
+3. Click any station to play immediately
+4. The menu updates automatically when you add/remove favorites
 
 ## About SomaFM
 

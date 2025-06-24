@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Raycast extension for playing SomaFM radio stations. Raycast is a macOS productivity launcher that allows custom extensions.
+This is a fully-featured Raycast extension for browsing and playing SomaFM internet radio stations. The extension provides multiple ways to access and play stations, including a browse interface, quick play shortcuts, and menu bar access.
 
 ## Development Commands
 
@@ -19,25 +19,58 @@ npm run publish    # Publish to Raycast Store
 ## Architecture
 
 ### Extension Structure
-- **Commands**: Extensions expose functionality through commands defined in `package.json`
-- **Entry Points**: Each command maps to a TypeScript file in `src/` (e.g., `play-synpheara` → `src/play-synpheara.ts`)
-- **Modes**: Commands can run in different modes:
-  - `no-view`: Executes without UI (current implementation)
-  - `view`: Shows a UI window
-  - `menu-bar`: Adds to menu bar
+- **Commands**: Three commands defined in `package.json`:
+  1. `index` - Main browse interface (Grid/List view)
+  2. `play-station` - Deeplink handler for quick play shortcuts
+  3. `menu-bar` - Menu bar extension for quick access to favorites
 
-### Current Implementation Status
-The extension is in early development. The `play-synpheara` command currently only copies the date to clipboard - it doesn't actually play any radio station yet.
+### Main Components
+- **src/index.tsx** - Main browsing interface with Grid/List views
+- **src/play-station.tsx** - Handles deeplinks for quick play shortcuts
+- **src/menu-bar.tsx** - Menu bar interface for favorite stations
+- **src/types/** - TypeScript interfaces (Station, Playlist)
+- **src/utils/** - Core utilities:
+  - `api.ts` - Fetches station data from SomaFM API
+  - `player.ts` - Handles stream playback with player detection
+  - `storage.ts` - LocalStorage for favorites and recently played
+- **src/hooks/** - Custom React hooks:
+  - `useFavorites` - Manages favorite stations
+  - `useViewMode` - Grid/List view toggling
+  - `useViewOptions` - Sorting and grouping preferences
 
-### Raycast API Patterns
-- Import from `@raycast/api` for UI components and utilities
-- Use `showHUD()` for quick notifications
-- Commands export a default async function as entry point
-- TypeScript with strict mode is enforced
+### Key Features
+1. **Smart Player Detection** - Automatically detects and uses IINA, VLC, or Music.app
+2. **PLS File Parsing** - Extracts direct stream URLs from playlist files
+3. **Multiple Access Methods**:
+   - Browse interface with search and filtering
+   - Quick play shortcuts via Raycast Quicklinks
+   - Menu bar for instant access to favorites
+4. **Persistent Storage** - Favorites, recently played, and view preferences
+5. **Genre Splitting** - Handles pipe-separated genres (e.g., "jazz|lounge")
 
-## Adding SomaFM Functionality
+### Data Flow
+1. Stations fetched from https://somafm.com/channels.json
+2. Cached in memory during session
+3. Player detection happens on each play action
+4. PLS files parsed to get direct stream URLs
+5. LocalStorage used for user preferences
 
-To implement actual radio playback:
-1. Commands will need to use system audio players (e.g., via `open` command or AppleScript)
-2. SomaFM provides streaming URLs at https://somafm.com/channels.json
-3. Consider adding a list view to browse/search stations instead of individual commands per station
+## Important Implementation Notes
+
+### Always Run Linting
+After making changes, always run:
+```bash
+npm run lint
+npm run typecheck  # if available
+```
+
+### Station Display
+- Stations appear in multiple sections if they qualify (favorites, recently played, all)
+- Genre grouping creates separate sections with stations appearing in each relevant genre
+- Sorting affects all sections consistently
+
+### Testing
+- Test with different media players installed/uninstalled
+- Verify PLS file parsing works for all stations
+- Check that favorites persist across sessions
+- Ensure recently played list updates correctly

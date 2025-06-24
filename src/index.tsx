@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast, open } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
 import { playStation } from "./utils/player";
@@ -7,6 +7,7 @@ import { useFavorites } from "./hooks/useFavorites";
 import { getRecentlyPlayed, RecentItem, clearRecentlyPlayed } from "./utils/storage";
 import { useViewMode } from "./hooks/useViewMode";
 import { useViewOptions } from "./hooks/useViewOptions";
+import { createDeeplink } from "@raycast/utils";
 
 export default function Command() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -62,11 +63,10 @@ export default function Command() {
   const favoriteStations = filteredStations.filter((station) => isFavorite(station.id));
   const recentStations = filteredStations.filter((station) => {
     const isRecent = recentlyPlayed.some((item) => item.stationId === station.id);
-    return isRecent && !isFavorite(station.id); // Don't show in recent if already in favorites
+    return isRecent; // Show ALL recently played stations, even if they're favorites
   });
   const otherStations = filteredStations.filter((station) => {
-    const isRecent = recentlyPlayed.some((item) => item.stationId === station.id);
-    return !isFavorite(station.id) && !isRecent;
+    return !isFavorite(station.id); // Show all non-favorites in "All Stations", even if recently played
   });
 
   // Sort each category
@@ -177,6 +177,29 @@ export default function Command() {
           onAction={() => toggleFavoriteStation(station.id, station.title)}
           shortcut={{ modifiers: ["cmd"], key: "f" }}
         />
+        {isFavorite(station.id) && (
+          <Action
+            title="Create Quick Play Shortcut"
+            icon={Icon.Link}
+            onAction={async () => {
+              const deeplink = createDeeplink({
+                command: "play-station",
+                context: {
+                  stationId: station.id,
+                  stationName: station.title,
+                },
+              });
+
+              // Open Raycast's Create Quicklink command with the deeplink
+              await open(
+                `raycast://extensions/raycast/raycast/create-quicklink?name=${encodeURIComponent(
+                  `Play ${station.title}`,
+                )}&link=${encodeURIComponent(deeplink)}`,
+              );
+            }}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
+          />
+        )}
         <Action
           title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
           icon={viewMode === "grid" ? Icon.List : Icon.Grid}

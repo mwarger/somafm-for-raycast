@@ -9,9 +9,22 @@
   "commands": [
     {
       "name": "index",
-      "title": "Browse Somafm Stations",
+      "title": "Browse SomaFM Stations",
       "description": "Browse and play SomaFM radio stations",
       "mode": "view"
+    },
+    {
+      "name": "play-station",
+      "title": "Play Station",
+      "description": "Play a station via deeplink",
+      "mode": "no-view"
+    },
+    {
+      "name": "menu-bar",
+      "title": "SomaFM Menu",
+      "description": "Quick access to favorite stations",
+      "mode": "menu-bar",
+      "interval": "10m"
     }
   ],
   "dependencies": {
