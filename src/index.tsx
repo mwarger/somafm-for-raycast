@@ -15,7 +15,7 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const { isFavorite, toggleFavoriteStation } = useFavorites();
   const { viewMode, toggleViewMode } = useViewMode();
-  const { viewOptions, toggleSortOrder, toggleGroupBy } = useViewOptions();
+  const { viewOptions, setSortBy, toggleGroupBy } = useViewOptions();
 
   useEffect(() => {
     loadData();
@@ -72,15 +72,24 @@ export default function Command() {
   // Sort each category
   const sortStations = (stationList: Station[]) => {
     return stationList.sort((a, b) => {
-      // Sort by listeners if that option is selected
-      if (viewOptions.sortOrder === "listeners") {
+      let result = 0;
+
+      if (viewOptions.sortBy === "listeners") {
         const aListeners = parseInt(a.listeners) || 0;
         const bListeners = parseInt(b.listeners) || 0;
-        return bListeners - aListeners; // Higher listeners first
+        result = aListeners - bListeners;
+      } else {
+        // Sort by name
+        result = a.title.localeCompare(b.title);
       }
 
-      // Default sort: prioritize search matches, then alphabetical
-      if (searchText) {
+      // Apply sort direction
+      if (viewOptions.sortDirection === "desc") {
+        result = -result;
+      }
+
+      // If searching, prioritize matches (overrides other sorting)
+      if (searchText && viewOptions.sortBy === "name") {
         const searchLower = searchText.toLowerCase();
         const aNameMatch = a.title.toLowerCase().includes(searchLower);
         const bNameMatch = b.title.toLowerCase().includes(searchLower);
@@ -88,7 +97,8 @@ export default function Command() {
         if (aNameMatch && !bNameMatch) return -1;
         if (!aNameMatch && bNameMatch) return 1;
       }
-      return a.title.localeCompare(b.title);
+
+      return result;
     });
   };
 
@@ -180,10 +190,28 @@ export default function Command() {
         />
         <ActionPanel.Section>
           <Action
-            title={viewOptions.sortOrder === "listeners" ? "Sort by Name" : "Sort by Listeners"}
-            icon={viewOptions.sortOrder === "listeners" ? Icon.ArrowDown : Icon.ArrowUp}
-            onAction={toggleSortOrder}
-            shortcut={{ modifiers: ["cmd"], key: "s" }}
+            title="Sort by Name"
+            icon={
+              viewOptions.sortBy === "name"
+                ? viewOptions.sortDirection === "asc"
+                  ? Icon.ArrowUp
+                  : Icon.ArrowDown
+                : Icon.TextCursor
+            }
+            onAction={() => setSortBy("name")}
+            shortcut={{ modifiers: ["cmd"], key: "1" }}
+          />
+          <Action
+            title="Sort by Listeners"
+            icon={
+              viewOptions.sortBy === "listeners"
+                ? viewOptions.sortDirection === "asc"
+                  ? Icon.ArrowUp
+                  : Icon.ArrowDown
+                : Icon.TwoPeople
+            }
+            onAction={() => setSortBy("listeners")}
+            shortcut={{ modifiers: ["cmd"], key: "2" }}
           />
           <Action
             title={`${viewOptions.groupBy === "genre" ? "Ungroup" : "Group"} by Genre`}

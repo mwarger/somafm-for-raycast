@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { LocalStorage } from "@raycast/api";
 
-export type SortOrder = "default" | "listeners";
+export type SortBy = "name" | "listeners";
+export type SortDirection = "asc" | "desc";
 export type GroupBy = "none" | "genre";
 
 interface ViewOptions {
-  sortOrder: SortOrder;
+  sortBy: SortBy;
+  sortDirection: SortDirection;
   groupBy: GroupBy;
 }
 
 const VIEW_OPTIONS_KEY = "somafm-view-options";
 
 const defaultOptions: ViewOptions = {
-  sortOrder: "default",
+  sortBy: "name",
+  sortDirection: "asc",
   groupBy: "none",
 };
 
@@ -29,6 +32,12 @@ export function useViewOptions() {
       const stored = await LocalStorage.getItem<string>(VIEW_OPTIONS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        // Handle backward compatibility
+        if ("sortOrder" in parsed) {
+          parsed.sortBy = parsed.sortOrder === "listeners" ? "listeners" : "name";
+          parsed.sortDirection = parsed.sortOrder === "listeners" ? "desc" : "asc";
+          delete parsed.sortOrder;
+        }
         setViewOptions({ ...defaultOptions, ...parsed });
       }
     } catch (error) {
@@ -48,9 +57,18 @@ export function useViewOptions() {
     }
   }
 
-  function toggleSortOrder() {
-    const newOrder = viewOptions.sortOrder === "default" ? "listeners" : "default";
-    updateViewOptions({ sortOrder: newOrder });
+  function setSortBy(sortBy: SortBy) {
+    if (viewOptions.sortBy === sortBy) {
+      // If clicking the same sort, toggle direction
+      const newDirection = viewOptions.sortDirection === "asc" ? "desc" : "asc";
+      updateViewOptions({ sortDirection: newDirection });
+    } else {
+      // If clicking a different sort, set it with default direction
+      updateViewOptions({
+        sortBy,
+        sortDirection: sortBy === "name" ? "asc" : "desc",
+      });
+    }
   }
 
   function toggleGroupBy() {
@@ -61,7 +79,7 @@ export function useViewOptions() {
   return {
     viewOptions,
     isLoading,
-    toggleSortOrder,
+    setSortBy,
     toggleGroupBy,
     updateViewOptions,
   };
