@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Grid, Icon, List, Keyboard, showToast, Toast, getPreferenceValues } from "@raycast/api";
 import { showFailureToast } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { fetchStations } from "./utils/api";
@@ -9,7 +9,13 @@ import { getRecentlyPlayed, RecentItem, clearRecentlyPlayed } from "./utils/stor
 import { useViewMode } from "./hooks/useViewMode";
 import { useViewOptions } from "./hooks/useViewOptions";
 
+interface Preferences {
+  showStationImages: boolean;
+  defaultView: "grid" | "list";
+}
+
 export default function Command() {
+  const preferences = getPreferenceValues<Preferences>();
   const [stations, setStations] = useState<Station[]>([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -266,13 +272,17 @@ export default function Command() {
     return (
       <Grid.Item
         key={station.id}
-        content={{
-          value: {
-            source: station.xlimage || station.largeimage || station.image,
-            fallback: Icon.Music,
-          },
-          tooltip: `${station.description}\n\n${nowPlaying}\n\n${station.listeners} listeners`,
-        }}
+        content={
+          preferences.showStationImages
+            ? {
+                value: {
+                  source: station.xlimage || station.largeimage || station.image,
+                  fallback: Icon.Music,
+                },
+                tooltip: `${station.description}\n\n${nowPlaying}\n\n${station.listeners} listeners`,
+              }
+            : Icon.Music
+        }
         title={station.title}
         subtitle={subtitle}
         keywords={[station.genre, station.dj]}
@@ -291,10 +301,14 @@ export default function Command() {
     return (
       <List.Item
         key={station.id}
-        icon={{
-          source: station.image,
-          fallback: Icon.Music,
-        }}
+        icon={
+          preferences.showStationImages
+            ? {
+                source: station.image,
+                fallback: Icon.Music,
+              }
+            : Icon.Music
+        }
         title={station.title}
         subtitle={station.genre}
         keywords={[station.genre, station.dj]}
