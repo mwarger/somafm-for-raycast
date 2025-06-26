@@ -24,6 +24,23 @@
       "disabledByDefault": true
     }
   ],
+  "preferences": [
+    {
+      "name": "audioPlayer",
+      "title": "Audio Player",
+      "description": "Select your preferred audio player",
+      "type": "dropdown",
+      "default": "auto",
+      "data": [
+        { "title": "Auto-detect", "value": "auto" },
+        { "title": "IINA", "value": "iina" },
+        { "title": "VLC", "value": "vlc" },
+        { "title": "Music.app", "value": "music" },
+        { "title": "Default Browser", "value": "browser" }
+      ],
+      "required": false
+    }
+  ],
   "dependencies": {
     "@raycast/api": "^1.100.3",
     "@raycast/utils": "^1.17.0"
