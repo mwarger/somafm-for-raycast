@@ -13,7 +13,6 @@ export default function Command() {
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { isFavorite, toggleFavoriteStation } = useFavorites();
   const { viewMode, toggleViewMode } = useViewMode();
   const { viewOptions, setSortBy, toggleGroupBy } = useViewOptions();
@@ -35,7 +34,6 @@ export default function Command() {
       const [fetchedStations, recent] = await Promise.all([fetchStations(), getRecentlyPlayed()]);
       setStations(fetchedStations);
       setRecentlyPlayed(recent);
-      setLastUpdated(new Date());
     } catch {
       if (!silent) {
         await showToast({

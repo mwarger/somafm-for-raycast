@@ -11,7 +11,7 @@ export async function fetchStations(): Promise<Station[]> {
       throw new Error(`Failed to fetch stations: ${response.statusText}`);
     }
 
-    const data = await response.json() as ChannelsResponse;
+    const data = (await response.json()) as ChannelsResponse;
     return data.channels;
   } catch (error) {
     await showToast({
