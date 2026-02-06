@@ -33,7 +33,7 @@ export default function Command() {
     await playStation(station);
   }
 
-  const menuIcon = favoriteStations.length > 0 ? "🎵" : "📻";
+  const menuIcon = Icon.Music;
   const tooltip = favoriteStations.length > 0 ? "SomaFM Favorites" : "SomaFM - No favorites yet";
 
   return (
@@ -58,7 +58,7 @@ export default function Command() {
               icon={Icon.List}
               onAction={async () => {
                 await launchCommand({
-                  name: "index",
+                  name: "browse-stations",
                   type: LaunchType.UserInitiated,
                 });
               }}
@@ -78,7 +78,7 @@ export default function Command() {
               icon={Icon.List}
               onAction={async () => {
                 await launchCommand({
-                  name: "index",
+                  name: "browse-stations",
                   type: LaunchType.UserInitiated,
                 });
               }}
