@@ -41,10 +41,21 @@ const mockStation = {
   lastPlaying: "Some Artist - Some Track",
 };
 
+type MockToast = Pick<Toast, "style" | "title" | "message" | "hide">;
+
 function createMockChildProcess() {
   const child = new EventEmitter() as EventEmitter & { unref: ReturnType<typeof vi.fn> };
   child.unref = vi.fn();
   return child;
+}
+
+function createMockToast(): MockToast {
+  return {
+    style: Toast.Style.Animated,
+    title: "",
+    message: "",
+    hide: vi.fn(),
+  };
 }
 
 describe("playStation", () => {
@@ -54,13 +65,8 @@ describe("playStation", () => {
   });
 
   it("records recent playback and closes window after spawn", async () => {
-    const toast = {
-      style: Toast.Style.Animated,
-      title: "",
-      message: "",
-      hide: vi.fn(),
-    };
-    vi.mocked(showToast).mockResolvedValue(toast);
+    const toast = createMockToast();
+    vi.mocked(showToast).mockResolvedValue(toast as Toast);
 
     const child = createMockChildProcess();
     vi.mocked(spawn).mockReturnValue(child as never);
@@ -79,13 +85,8 @@ describe("playStation", () => {
   });
 
   it("shows failure toast when spawn errors", async () => {
-    const toast = {
-      style: Toast.Style.Animated,
-      title: "",
-      message: "",
-      hide: vi.fn(),
-    };
-    vi.mocked(showToast).mockResolvedValue(toast);
+    const toast = createMockToast();
+    vi.mocked(showToast).mockResolvedValue(toast as Toast);
 
     const child = createMockChildProcess();
     vi.mocked(spawn).mockReturnValue(child as never);
